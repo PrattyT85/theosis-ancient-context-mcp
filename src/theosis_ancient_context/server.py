@@ -5,7 +5,7 @@ from fastmcp import FastMCP
 
 from . import __version__
 from .adapters.registry import get_adapter
-from .registry import corpus_status, list_corpora, REGISTRY
+from .registry import corpus_status, list_corpora as list_corpora_records, REGISTRY
 
 mcp = FastMCP(
     name="theosis-ancient-context",
@@ -31,7 +31,7 @@ MAX_TEXT_BYTES = 200_000
 # Tool 1: list_corpora
 # ---------------------------------------------------------------------------
 @mcp.tool()
-def list_corpora_tool() -> list[dict]:
+def list_corpora() -> list[dict]:
     """List all registered ancient text corpora with metadata.
 
     Returns registry records for TLA, Coptic SCRIPTORIUM, HPM/HDivT,
@@ -39,8 +39,12 @@ def list_corpora_tool() -> list[dict]:
     language, period, access_status, source_url, licence notes, and
     integration notes.
     """
-    records = list_corpora()
+    records = list_corpora_records()
     return [r.model_dump() for r in records]
+
+
+# Backward-compatible Python import name; the MCP tool is ``list_corpora``.
+list_corpora_tool = list_corpora
 
 
 # ---------------------------------------------------------------------------

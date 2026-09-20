@@ -173,6 +173,7 @@ def corpus_status(corpus_id: str) -> dict[str, Any]:
     if local_path:
         if os.path.isdir(local_path):
             status_info["local_path_exists"] = True
+            status_info["access_status"] = AccessStatus.LOCAL_CONFIGURED.value
             # Count files
             try:
                 file_count = sum(1 for _ in os.scandir(local_path))
@@ -202,11 +203,16 @@ def make_provenance(corpus_id: str) -> ProvenanceEnvelope:
     if rec.licence_notes:
         warning = f"Licence notes: {rec.licence_notes}"
 
+    access_status = rec.access_status.value
+    local_path = _local_path(corpus_id)
+    if local_path and os.path.isdir(local_path):
+        access_status = AccessStatus.LOCAL_CONFIGURED.value
+
     return ProvenanceEnvelope(
         source_layer=rec.source_type.value,
         corpus_id=corpus_id,
         source_url=rec.source_url,
         licence=rec.licence,
         licence_warning=warning,
-        access_status=rec.access_status.value,
+        access_status=access_status,
     )

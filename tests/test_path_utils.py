@@ -64,6 +64,13 @@ class TestListTextFiles:
         assert "c.json" in names
         assert "d.pdf" not in names
 
+    def test_lists_nested_files(self, tmp_path):
+        nested = tmp_path / "reviewed"
+        nested.mkdir()
+        (nested / "KTU 1.5.txt").write_text("ilm")
+        files = list_text_files(str(tmp_path))
+        assert any(f.name == "KTU 1.5.txt" for f in files)
+
     def test_respects_max_files(self, tmp_path):
         for i in range(10):
             (tmp_path / f"f{i:02d}.txt").write_text(str(i))

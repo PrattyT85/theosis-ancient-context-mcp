@@ -29,7 +29,7 @@ def list_text_files(directory: str, max_files: int = 500) -> list[Path]:
         return []
     results: list[Path] = []
     try:
-        for entry in sorted(base.iterdir()):
+        for entry in sorted(base.rglob("*")):
             if entry.is_file() and entry.suffix.lower() in {".txt", ".conllu", ".xml", ".json", ".rels"}:
                 results.append(entry)
                 if len(results) >= max_files:

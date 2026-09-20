@@ -11,9 +11,10 @@ from theosis_ancient_context.server import (
 
 
 class TestListCorporaTool:
-    def test_returns_nine_corpora(self):
+    def test_returns_ten_corpora(self):
         result = list_corpora_tool()
-        assert len(result) == 9
+        assert len(result) == 10
+        assert any(rec["corpus_id"] == "tlhdig" for rec in result)
 
     def test_all_have_required_keys(self):
         for rec in list_corpora_tool():

@@ -9,6 +9,7 @@ FastMCP stdio service for ancient text corpora. Part of the [Theosis](https://gi
 | **TLA** (Thesaurus Linguae Aegyptiae) | Egyptian | Remote/status-only | Free non-commercial research |
 | **Coptic SCRIPTORIUM** | Coptic | Local optional | CC-BY (exceptions exist) |
 | **HPM/HDivT** (Hittite ritual texts) | Hittite | Remote/status-only | Academic |
+| **TLHdig** (Hittite XML editions) | Hittite | Local optional | CC BY 4.0 (verify files) |
 | **CUC** (Copenhagen Ugaritic Corpus) | Ugaritic | Local optional | CC BY-NC 4.0 |
 | **DASI** | Arabic epigraphic | Remote/status-only | Academic |
 | **OCIANA** | Akkadian/Sumerian | Remote/status-only | Academic |
@@ -19,6 +20,7 @@ FastMCP stdio service for ancient text corpora. Part of the [Theosis](https://gi
 ## What's integrated vs. what's not
 
 - **DPPC and CIP are NOT integrated** — no public API, data, or licence has been confirmed. They are registered as `deferred` with no scraper or adapter.
+- **TLHdig is local optional** — set `HITTITE_TLHDIG_DIR` to the extracted `TLHbasisONLINE25.1_ZENODO` directory from Zenodo record 15459134. The adapter reads bounded XML and labels the dataset/version.
 - **CUC is CC BY-NC and local-only** — commercial use is prohibited. The adapter only works when `CUC_CORPUS_DIR` is configured to point at a local checkout of the corpus.
 - **TLA, HPM, DASI, OCIANA** are remote/status-only until a stable public API contract is verified. They return structured `remote_only` results with provenance envelopes.
 - **CDLI** is status-only until the REST JSON API shape is confirmed from [cdli.earth/docs/api](https://cdli.earth/docs/api).
@@ -56,6 +58,9 @@ export COPTSCRIPTORIUM_CORPUS_DIR=/path/to/corpora
 
 # Copenhagen Ugaritic Corpus
 export CUC_CORPUS_DIR=/path/to/cuc
+
+# Hittite TLHdig (extracted Zenodo archive)
+export HITTITE_TLHDIG_DIR=/path/to/TLHbasisONLINE25.1_ZENODO
 ```
 
 ## Integration

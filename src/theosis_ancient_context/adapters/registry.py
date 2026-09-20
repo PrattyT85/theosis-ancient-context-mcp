@@ -4,6 +4,7 @@ from __future__ import annotations
 from .cdli import CDLIAdapter
 from .coptic import CopticScriptoriumAdapter
 from .cuc import CUCAdapter
+from .tlhdig import HittiteTlhdigAdapter
 from .remote_status import (
     DASIAdapter,
     DeferredAdapter,
@@ -20,6 +21,7 @@ def get_adapter(corpus_id: str):
         "coptic_scriptorium": CopticScriptoriumAdapter(),
         "hpm_hdivt": HPMAdapter(),
         "cuc": CUCAdapter(),
+        "tlhdig": HittiteTlhdigAdapter(),
         "dasi": DASIAdapter(),
         "ociana": OCIANAAdapter(),
         "cdli": CDLIAdapter(),

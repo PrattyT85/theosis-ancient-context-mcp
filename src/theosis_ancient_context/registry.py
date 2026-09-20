@@ -49,8 +49,28 @@ REGISTRY: dict[str, CorpusRecord] = {
         access_status=AccessStatus.REMOTE_STATUS_ONLY,
         source_url="https://hethport.net/",
         licence="Research/academic use",
-        licence_notes="HPM is mostly HTML, no REST API. TLHdig XML dataset available at Zenodo (63.9 MB, https://zenodo.org/records/15459134).",
+        licence_notes="HPM is mostly HTML, no REST API. TLHdig XML dataset available separately (see tlhdig corpus).",
         integration_notes="remote_only — no safe adapter in v0.1.0. Bulk download not performed.",
+    ),
+    "tlhdig": CorpusRecord(
+        corpus_id="tlhdig",
+        name="Thesaurus Linguarum Hethaeorum digitalis (TLHdig)",
+        languages=["Hittite"],
+        period="2nd millennium BCE",
+        source_type=SourceType.LOCAL_OPTIONAL,
+        access_status=AccessStatus.LOCAL_NOT_CONFIGURED,
+        source_url="https://zenodo.org/records/15459134",
+        licence="CC-BY 4.0",
+        licence_notes=(
+            "Zenodo DOI: 10.5281/zenodo.15459134. CC-BY 4.0 per Zenodo metadata. "
+            "HPM site states CC BY-SA — verify for your use case. "
+            "Do not bundle 63.9 MB archive; require HITTITE_TLHDIG_DIR."
+        ),
+        integration_notes=(
+            "local_optional — requires HITTITE_TLHDIG_DIR pointing to extracted "
+            "TLHdig XML dataset. CTH subdirectories contain XML transliterations. "
+            "Safe local search and text retrieval only."
+        ),
     ),
     "cuc": CorpusRecord(
         corpus_id="cuc",
@@ -63,6 +83,18 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="CC BY-NC 4.0",
         licence_notes="DOI: 10.5281/zenodo.10695308. 278 KTU texts. Text-Fabric format. Do NOT treat ORACC as Ugaritic.",
         integration_notes="local_optional — requires CUC_CORPUS_DIR. Safe lookup only when configured. No dependency on Text-Fabric unless available.",
+    ),
+    "tlhdig": CorpusRecord(
+        corpus_id="tlhdig",
+        name="Thesaurus Linguae Hethaeorum digitalis (TLHdig)",
+        languages=["Hittite"],
+        period="2nd millennium BCE",
+        source_type=SourceType.LOCAL_OPTIONAL,
+        access_status=AccessStatus.LOCAL_NOT_CONFIGURED,
+        source_url="https://zenodo.org/records/15459134",
+        licence="CC BY 4.0 (Zenodo dataset; verify source files)",
+        licence_notes="TLHdig 0.2.0-beta; 63.9 MB Zenodo archive. HPM/HDivT-related XML editions; preserve source/version metadata.",
+        integration_notes="local_optional — requires HITTITE_TLHDIG_DIR pointing at the extracted TLHbasisONLINE25.1_ZENODO directory.",
     ),
     "dasi": CorpusRecord(
         corpus_id="dasi",
@@ -142,6 +174,7 @@ def _local_path(corpus_id: str) -> str | None:
     env_map = {
         "coptic_scriptorium": "COPTSCRIPTORIUM_CORPUS_DIR",
         "cuc": "CUC_CORPUS_DIR",
+        "tlhdig": "HITTITE_TLHDIG_DIR",
     }
     env_var = env_map.get(corpus_id)
     if env_var:

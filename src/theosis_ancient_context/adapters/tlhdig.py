@@ -112,7 +112,8 @@ class HittiteTlhdigAdapter(BaseAdapter):
 
     def search(self, query: str, limit: int = 20) -> SearchResult:
         prov = make_provenance(CORPUS_ID)
-        if not self.is_available():
+        corpus_dir = self.corpus_dir
+        if not corpus_dir:
             return SearchResult(
                 provenance=prov,
                 status="local_not_configured",
@@ -123,7 +124,7 @@ class HittiteTlhdigAdapter(BaseAdapter):
                 ),
             )
 
-        root = Path(self.corpus_dir)
+        root = Path(corpus_dir)
         cth_dirs = _list_cth_dirs(root)
         pattern = re.compile(re.escape(query), re.IGNORECASE)
         matches: list[dict] = []
@@ -165,7 +166,8 @@ class HittiteTlhdigAdapter(BaseAdapter):
 
     def get_text(self, reference: str) -> TextResult:
         prov = make_provenance(CORPUS_ID)
-        if not self.is_available():
+        corpus_dir = self.corpus_dir
+        if not corpus_dir:
             return TextResult(
                 provenance=prov,
                 status="local_not_configured",
@@ -173,7 +175,7 @@ class HittiteTlhdigAdapter(BaseAdapter):
             )
 
         # Try resolving as a direct file path under corpus root
-        target = safe_resolve(self.corpus_dir, reference)
+        target = safe_resolve(corpus_dir, reference)
         if target is not None and target.suffix.lower() == ".xml":
             content = read_bounded(target)
             return TextResult(
@@ -187,7 +189,7 @@ class HittiteTlhdigAdapter(BaseAdapter):
         cth_match = re.match(r"^(?:CTH\s*)?(\d+)$", reference.strip(), re.IGNORECASE)
         if cth_match:
             cth_num = cth_match.group(1)
-            root = Path(self.corpus_dir)
+            root = Path(corpus_dir)
             for cth_dir in _list_cth_dirs(root):
                 if _extract_cth_number(cth_dir.name) == cth_num:
                     xml_files = _list_xml_files(cth_dir)
@@ -210,7 +212,8 @@ class HittiteTlhdigAdapter(BaseAdapter):
 
     def get_metadata(self, reference: str) -> TextResult:
         prov = make_provenance(CORPUS_ID)
-        if not self.is_available():
+        corpus_dir = self.corpus_dir
+        if not corpus_dir:
             return TextResult(
                 provenance=prov,
                 status="local_not_configured",
@@ -218,7 +221,7 @@ class HittiteTlhdigAdapter(BaseAdapter):
             )
 
         # Try direct file path
-        target = safe_resolve(self.corpus_dir, reference)
+        target = safe_resolve(corpus_dir, reference)
         if target is not None and target.suffix.lower() == ".xml":
             return TextResult(
                 provenance=prov,
@@ -230,7 +233,7 @@ class HittiteTlhdigAdapter(BaseAdapter):
         cth_match = re.match(r"^(?:CTH\s*)?(\d+)$", reference.strip(), re.IGNORECASE)
         if cth_match:
             cth_num = cth_match.group(1)
-            root = Path(self.corpus_dir)
+            root = Path(corpus_dir)
             for cth_dir in _list_cth_dirs(root):
                 if _extract_cth_number(cth_dir.name) == cth_num:
                     xml_files = _list_xml_files(cth_dir)

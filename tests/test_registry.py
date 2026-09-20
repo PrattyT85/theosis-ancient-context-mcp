@@ -14,6 +14,7 @@ REQUIRED_CORPORA = [
     "tla",
     "coptic_scriptorium",
     "hpm_hdivt",
+    "tlhdig",
     "cuc",
     "dasi",
     "ociana",
@@ -32,8 +33,8 @@ class TestRegistryCompleteness:
         for cid in REQUIRED_CORPORA:
             assert cid in ids, f"Missing corpus: {cid}"
 
-    def test_nine_corpora_registered(self):
-        assert len(list_corpora()) == 9
+    def test_ten_corpora_registered(self):
+        assert len(list_corpora()) == 10
 
     def test_all_records_have_required_fields(self):
         for rec in list_corpora():
@@ -54,7 +55,7 @@ class TestRegistryCompleteness:
             assert rec.access_status == AccessStatus.DEFERRED
 
     def test_local_optional_corpora(self):
-        for cid in ["coptic_scriptorium", "cuc"]:
+        for cid in ["coptic_scriptorium", "cuc", "tlhdig"]:
             rec = get_corpus(cid)
             assert rec is not None
             assert rec.source_type == SourceType.LOCAL_OPTIONAL

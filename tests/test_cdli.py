@@ -6,6 +6,8 @@ import urllib.error
 
 from theosis_ancient_context.adapters.cdli import (
     CDLIAdapter,
+    _artifact_matches_language,
+    _parse_language_filter,
     _validate_id,
     _validate_query,
     _artifact_summary,
@@ -33,6 +35,33 @@ SAMPLE_SEARCH_RESULT = [
         "genres": [{"genre": {"genre": "Lexical"}}],
         "inscription": {"id": 2309985, "artifact_id": 1},
     }
+]
+
+# Mixed-language search result for language-filter testing
+SAMPLE_MIXED_SEARCH = [
+    {
+        "id": 10,
+        "designation": "Akkadian tablet",
+        "languages": [{"language": {"inline_code": "akk", "language": "Akkadian"}}],
+    },
+    {
+        "id": 20,
+        "designation": "Ugaritic tablet",
+        "languages": [{"language": {"inline_code": "uga", "language": "Ugaritic"}}],
+    },
+    {
+        "id": 30,
+        "designation": "Sumerian tablet",
+        "languages": [
+            {"language": {"inline_code": "sux", "language": "Sumerian"}},
+            {"language": {"inline_code": "akk", "language": "Akkadian"}},
+        ],
+    },
+    {
+        "id": 40,
+        "designation": "Unknown language artifact",
+        # No languages field at all
+    },
 ]
 
 SAMPLE_ARTIFACT_RESULT = [
@@ -135,6 +164,105 @@ class TestValidateId:
 
     def test_p_lowercase(self):
         assert _validate_id("p123") == 123
+
+
+# ---------------------------------------------------------------------------
+# Language filter parsing tests
+# ---------------------------------------------------------------------------
+
+class TestParseLanguageFilter:
+    def test_colon_notation(self):
+        q, lang = _parse_language_filter("language:Ugaritic")
+        assert q == ""
+        assert lang == "Ugaritic"
+
+    def test_equals_notation(self):
+        q, lang = _parse_language_filter("language=Akkadian")
+        assert q == ""
+        assert lang == "Akkadian"
+
+    def test_colon_with_surrounding_text(self):
+        q, lang = _parse_language_filter("lexical tablets language:Sumerian")
+        assert q == "lexical tablets"
+        assert lang == "Sumerian"
+
+    def test_equals_with_surrounding_text(self):
+        q, lang = _parse_language_filter("tablet language=Akkadian broken")
+        assert q == "tablet broken"
+        assert lang == "Akkadian"
+
+    def test_no_filter(self):
+        q, lang = _parse_language_filter("tablet inscriptions")
+        assert q == "tablet inscriptions"
+        assert lang is None
+
+    def test_case_insensitive(self):
+        q, lang = _parse_language_filter("LANGUAGE:EGYPTIAN")
+        assert lang == "EGYPTIAN"
+
+    def test_colon_with_space(self):
+        q, lang = _parse_language_filter("language: Ugaritic")
+        assert lang == "Ugaritic"
+
+    def test_empty_query(self):
+        q, lang = _parse_language_filter("")
+        assert q == ""
+        assert lang is None
+
+    def test_multiple_colons_uses_first(self):
+        q, lang = _parse_language_filter("language:Akkadian language:Sumerian")
+        assert lang == "Akkadian"
+        # Second filter remains in cleaned query
+        assert "language:Sumerian" in q
+
+    def test_preserves_length_of_full_query(self):
+        """A long query with filter should not exceed max length."""
+        base = "x" * 490
+        q, lang = _parse_language_filter(f"{base} language:Ugaritic")
+        assert lang == "Ugaritic"
+        # Cleaned query should be short enough for validation
+        assert len(q) <= 500
+
+
+# ---------------------------------------------------------------------------
+# Language matching tests
+# ---------------------------------------------------------------------------
+
+class TestArtifactMatchesLanguage:
+    def test_match_by_inline_code(self):
+        art = {"languages": [{"language": {"inline_code": "akk"}}]}
+        assert _artifact_matches_language(art, "akk") is True
+
+    def test_match_by_full_name(self):
+        art = {"languages": [{"language": {"language": "Akkadian"}}]}
+        assert _artifact_matches_language(art, "Akkadian") is True
+
+    def test_case_insensitive_code(self):
+        art = {"languages": [{"language": {"inline_code": "UGA"}}]}
+        assert _artifact_matches_language(art, "uga") is True
+
+    def test_case_insensitive_name(self):
+        art = {"languages": [{"language": {"language": "Ugaritic"}}]}
+        assert _artifact_matches_language(art, "ugaritic") is True
+
+    def test_no_match(self):
+        art = {"languages": [{"language": {"inline_code": "sux"}}]}
+        assert _artifact_matches_language(art, "Akkadian") is False
+
+    def test_multiple_languages_match(self):
+        art = {"languages": [
+            {"language": {"inline_code": "sux", "language": "Sumerian"}},
+            {"language": {"inline_code": "akk", "language": "Akkadian"}},
+        ]}
+        assert _artifact_matches_language(art, "Akkadian") is True
+
+    def test_no_language_metadata_is_excluded(self):
+        art = {"id": 1}
+        assert _artifact_matches_language(art, "Ugaritic") is False
+
+    def test_empty_language_list_is_excluded(self):
+        art = {"languages": []}
+        assert _artifact_matches_language(art, "Ugaritic") is False
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +374,144 @@ class TestCDLISearch:
         result = adapter.search("tablet")
         assert result.status == "error"
         assert "Unexpected" in result.message
+
+    # ---- raw_query provenance ----
+
+    def test_search_empty_preserves_raw_query(self):
+        adapter = CDLIAdapter()
+        result = adapter.search("")
+        assert result.raw_query == ""
+
+    def test_search_error_preserves_raw_query(self):
+        adapter = CDLIAdapter()
+        result = adapter.search("x" * 501)
+        assert result.raw_query == "x" * 501
+
+    @patch("urllib.request.urlopen")
+    def test_search_ok_preserves_raw_query(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_SEARCH_RESULT)
+        adapter = CDLIAdapter()
+        result = adapter.search("  lexical tablet  ")
+        assert result.raw_query == "  lexical tablet  "
+
+    @patch("urllib.request.urlopen")
+    def test_search_network_error_preserves_raw_query(self, mock_urlopen):
+        mock_urlopen.side_effect = OSError("timeout")
+        adapter = CDLIAdapter()
+        result = adapter.search("tablet")
+        assert result.raw_query == "tablet"
+
+    # ---- upstream_count / filtered_count ----
+
+    @patch("urllib.request.urlopen")
+    def test_search_no_filter_counts_equal(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_SEARCH_RESULT)
+        adapter = CDLIAdapter()
+        result = adapter.search("tablet")
+        assert result.upstream_count == 1
+        assert result.filtered_count == 1
+
+    @patch("urllib.request.urlopen")
+    def test_search_no_filter_empty_response(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response([])
+        adapter = CDLIAdapter()
+        result = adapter.search("tablet")
+        assert result.upstream_count == 0
+        assert result.filtered_count == 0
+
+    # ---- language filter integration ----
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_match(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("language:Akkadian")
+        assert result.status == "ok"
+        # Should match ids 10 (Akkadian) and 30 (Sumerian+Akkadian)
+        ids = [r["id"] for r in result.results]
+        assert 10 in ids
+        assert 30 in ids
+        assert 20 not in ids  # Ugaritic should be filtered out
+        assert result.upstream_count == 4
+        assert result.filtered_count == 2
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_no_match(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("language:Hittite")
+        assert result.status == "ok"
+        assert len(result.results) == 0
+        assert result.upstream_count == 4
+        assert result.filtered_count == 0
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_message(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("language:Ugaritic")
+        assert "4" in result.message  # upstream_count
+        assert "1" in result.message  # filtered_count
+        assert "Ugaritic" in result.message
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_preserves_raw_query(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("lexical language:Akkadian tablets")
+        assert result.raw_query == "lexical language:Akkadian tablets"
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_equals_notation(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("language=Ugaritic")
+        assert result.status == "ok"
+        assert result.filtered_count == 1
+        ids = [r["id"] for r in result.results]
+        assert 20 in ids
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_unknown_metadata_allows(self, mock_urlopen):
+        """Artifact with no language metadata is excluded from constrained results."""
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        # id=40 has no languages field — it must not be mislabelled.
+        result = adapter.search("language:Akkadian")
+        ids = [r["id"] for r in result.results]
+        assert 40 not in ids
+        assert result.filtered_count == 2
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_zero_results_ok_status(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response([])
+        adapter = CDLIAdapter()
+        result = adapter.search("language:Hittite")
+        assert result.status == "ok"
+        assert result.upstream_count == 0
+        assert result.filtered_count == 0
+        assert "0 matched" in result.message
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_by_full_name(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("language:Sumerian")
+        ids = [r["id"] for r in result.results]
+        assert 30 in ids  # Sumerian+Akkadian
+        assert 10 not in ids  # Akkadian only
+        assert result.filtered_count == 1
+
+    @patch("urllib.request.urlopen")
+    def test_search_language_filter_with_surrounding_query(self, mock_urlopen):
+        mock_urlopen.return_value = _mock_response(SAMPLE_MIXED_SEARCH)
+        adapter = CDLIAdapter()
+        result = adapter.search("broken tablet language:Akkadian")
+        assert result.raw_query == "broken tablet language:Akkadian"
+        # Upstream receives only "broken tablet"
+        called_url = mock_urlopen.call_args[0][0].full_url
+        assert "language" not in called_url
+        assert "broken%20tablet" in called_url
 
 
 class TestCDLIGetText:

@@ -63,6 +63,51 @@ def _validate_id(reference: str) -> int | None:
     return None
 
 
+def _parse_language_filter(query: str) -> tuple[str, str | None]:
+    """Parse an optional language constraint from a query string.
+
+    Recognised forms:
+      - ``language:Ugaritic`` (inline colon notation)
+      - ``language=Ugaritic`` (inline equals notation)
+
+    Returns (cleaned_query, language_or_None).  If a language filter is
+    present it is *removed* from the query sent upstream so that CDLI's
+    search endpoint (which may ignore it) receives a plain keyword query.
+    """
+    # language:Value  (case-insensitive keyword)
+    m = re.search(r'\blanguage[:=]\s*(\S+)', query, re.IGNORECASE)
+    if m:
+        lang = m.group(1).strip()
+        cleaned = query[: m.start()] + query[m.end() :]
+        # Collapse whitespace
+        cleaned = re.sub(r'\s+', ' ', cleaned).strip()
+        return cleaned, lang
+    return query, None
+
+
+def _artifact_matches_language(
+    art: dict[str, Any], language: str
+) -> bool:
+    """Check whether an artifact's language metadata matches *language*.
+
+    Language matching is case-insensitive and checks both the ISO inline_code
+    and the full language name nested under ``languages[].language``.
+    Returns False if no language metadata is present — we never claim a
+    match when metadata is absent or does not include the requested language.
+    """
+    lang_lower = language.lower()
+    lang_entries = art.get("languages", [])
+    if not lang_entries:
+        return False
+    for entry in lang_entries:
+        lang_obj = entry.get("language", {})
+        code = (lang_obj.get("inline_code") or "").lower()
+        name = (lang_obj.get("language") or "").lower()
+        if code == lang_lower or name == lang_lower:
+            return True
+    return False
+
+
 def _fetch_json(url: str, timeout: int = DEFAULT_TIMEOUT_S) -> Any:
     """Fetch a JSON URL with bounds. Returns parsed data or raises."""
     req = urllib.request.Request(
@@ -156,13 +201,24 @@ class CDLIAdapter(BaseAdapter):
     # ------------------------------------------------------------------
     def search(self, query: str, limit: int = 20) -> SearchResult:
         prov = make_provenance(CORPUS_ID)
-        q = _validate_query(query)
+        raw_query = query
+
+        # Parse optional language filter BEFORE validation so that
+        # ``language:Ugaritic`` does not fail the length check.
+        upstream_query, language_filter = _parse_language_filter(raw_query)
+
+        q = _validate_query(upstream_query)
         if q is None:
-            return SearchResult(
-                provenance=prov,
-                status="error",
-                message="Invalid or empty query (max 500 chars).",
-            )
+            if language_filter is not None:
+                # Only a language filter, no keyword — use empty search
+                q = ""
+            else:
+                return SearchResult(
+                    provenance=prov,
+                    status="error",
+                    message="Invalid or empty query (max 500 chars).",
+                    raw_query=raw_query,
+                )
         limit = min(max(limit, 1), _MAX_LIMIT)
         url = f"{self._base_url}/search/?q={urllib.parse.quote(q, safe='')}&format=json"
         try:
@@ -172,24 +228,53 @@ class CDLIAdapter(BaseAdapter):
                 provenance=prov,
                 status="upstream_error",
                 message=f"CDLI returned HTTP {exc.code}: {exc.reason}",
+                raw_query=raw_query,
             )
         except (urllib.error.URLError, OSError, ValueError) as exc:
             return SearchResult(
                 provenance=prov,
                 status="network_error",
                 message=f"Failed to reach CDLI: {exc}",
+                raw_query=raw_query,
             )
         if not isinstance(data, list):
             return SearchResult(
                 provenance=prov,
                 status="error",
                 message="Unexpected response format from CDLI search.",
+                raw_query=raw_query,
             )
+
+        upstream_count = len(data)
+
+        if language_filter is not None:
+            # Post-filter by language metadata — CDLI may ignore the filter
+            matched = [item for item in data if _artifact_matches_language(item, language_filter)]
+            filtered_count = len(matched)
+            results = [_artifact_summary(item) for item in matched[:limit]]
+            return SearchResult(
+                provenance=prov,
+                status="ok",
+                results=results,
+                raw_query=raw_query,
+                upstream_count=upstream_count,
+                filtered_count=filtered_count,
+                message=(
+                    f"CDLI returned {upstream_count} artifact(s), "
+                    f"{filtered_count} matched language '{language_filter}'. "
+                    f"Open access — verify licence for your use."
+                ),
+            )
+
+        # No language filter — pass through as before
         results = [_artifact_summary(item) for item in data[:limit]]
         return SearchResult(
             provenance=prov,
             status="ok",
             results=results,
+            raw_query=raw_query,
+            upstream_count=upstream_count,
+            filtered_count=upstream_count,
             message=f"CDLI found {len(results)} artifact(s) for query '{q}'. Open access — verify licence for your use.",
         )
 

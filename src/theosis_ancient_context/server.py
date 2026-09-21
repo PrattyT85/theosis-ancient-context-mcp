@@ -5,7 +5,12 @@ from fastmcp import FastMCP
 
 from . import __version__
 from .adapters.registry import get_adapter
-from .registry import corpus_status, list_corpora as list_corpora_records, REGISTRY
+from .registry import (
+    corpus_status,
+    get_source_manifest as get_source_manifest_records,
+    list_corpora as list_corpora_records,
+    REGISTRY,
+)
 
 mcp = FastMCP(
     name="theosis-ancient-context",
@@ -61,7 +66,22 @@ def get_corpus_status(corpus: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Tool 3: search_corpus
+# Tool 3: get_source_manifest
+# ---------------------------------------------------------------------------
+@mcp.tool()
+def get_source_manifest() -> list[dict]:
+    """Return the machine-readable source manifest with live local-path status.
+
+    Each entry includes source_url, source_type, language, period,
+    access_status, licence, licence_notes, local_path_env_var,
+    version_or_commit, doi, last_reviewed, and next_review fields.
+    Local path status is overlaid from the current environment.
+    """
+    return get_source_manifest_records()
+
+
+# ---------------------------------------------------------------------------
+# Tool 4: search_corpus
 # ---------------------------------------------------------------------------
 @mcp.tool()
 def search_corpus(corpus: str, query: str, limit: int = 20) -> dict:
@@ -84,7 +104,7 @@ def search_corpus(corpus: str, query: str, limit: int = 20) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Tool 4: get_text
+# Tool 5: get_text
 # ---------------------------------------------------------------------------
 @mcp.tool()
 def get_text(corpus: str, reference: str) -> dict:
@@ -105,7 +125,7 @@ def get_text(corpus: str, reference: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# Tool 5: get_text_metadata
+# Tool 6: get_text_metadata
 # ---------------------------------------------------------------------------
 @mcp.tool()
 def get_text_metadata(corpus: str, reference: str) -> dict:

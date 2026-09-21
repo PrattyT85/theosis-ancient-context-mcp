@@ -1,7 +1,9 @@
 """Corpus registry — all known sources and their integration status."""
 from __future__ import annotations
 
+import json
 import os
+from pathlib import Path
 from typing import Any
 
 from .models import (
@@ -10,6 +12,8 @@ from .models import (
     ProvenanceEnvelope,
     SourceType,
 )
+
+SOURCES_JSON_PATH = Path(__file__).resolve().parent.parent.parent / "sources.json"
 
 # ---------------------------------------------------------------------------
 # Static registry
@@ -27,6 +31,8 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="Free for non-commercial research",
         licence_notes="Public research platform; no stable public API contract confirmed. Raw JSON/TEI publication planned.",
         integration_notes="remote_only — no safe adapter in v0.1.0. Search page exists but undocumented form internals.",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "coptic_scriptorium": CorpusRecord(
         corpus_id="coptic_scriptorium",
@@ -39,6 +45,10 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="CC-BY (with explicit exceptions)",
         licence_notes="v6.3.0 release; CoNLL-U/relANNIS/PAULA/TEI formats. Some parts under different licences — check individual files.",
         integration_notes="local_optional — requires COPTSCRIPTORIUM_CORPUS_DIR. Do not bundle 2.38m-word data. Safe local search over bounded text files only.",
+        local_path_env_var="COPTSCRIPTORIUM_CORPUS_DIR",
+        version_or_commit="v6.3.0",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "hpm_hdivt": CorpusRecord(
         corpus_id="hpm_hdivt",
@@ -51,6 +61,8 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="Research/academic use",
         licence_notes="HPM is mostly HTML, no REST API. TLHdig XML dataset available separately (see tlhdig corpus).",
         integration_notes="remote_only — no safe adapter in v0.1.0. Bulk download not performed.",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "tlhdig": CorpusRecord(
         corpus_id="tlhdig",
@@ -71,6 +83,11 @@ REGISTRY: dict[str, CorpusRecord] = {
             "TLHdig XML dataset. CTH subdirectories contain XML transliterations. "
             "Safe local search and text retrieval only."
         ),
+        local_path_env_var="HITTITE_TLHDIG_DIR",
+        version_or_commit="25.1",
+        doi="10.5281/zenodo.15459134",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "cuc": CorpusRecord(
         corpus_id="cuc",
@@ -81,8 +98,12 @@ REGISTRY: dict[str, CorpusRecord] = {
         access_status=AccessStatus.LOCAL_NOT_CONFIGURED,
         source_url="https://github.com/DT-UCPH/cuc",
         licence="CC BY-NC 4.0",
-        licence_notes="DOI: 10.5281/zenodo.10695308. 278 KTU texts. Text-Fabric format. Do NOT treat ORACC as Ugaritic.",
+        licence_notes="DOI: 10.5281/zenodo.10695308. 278 KTU texts. Text-Fabric format. Do NOT treat ORACC as Ugaritic. Commercial use is prohibited.",
         integration_notes="local_optional — requires CUC_CORPUS_DIR. Safe lookup only when configured. No dependency on Text-Fabric unless available.",
+        local_path_env_var="CUC_CORPUS_DIR",
+        doi="10.5281/zenodo.10695308",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "dasi": CorpusRecord(
         corpus_id="dasi",
@@ -95,6 +116,8 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="Academic/research",
         licence_notes="API endpoint mentioned in help page; exact API contract not yet confirmed.",
         integration_notes="remote_only — no safe adapter in v0.1.0.",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "ociana": CorpusRecord(
         corpus_id="ociana",
@@ -105,8 +128,10 @@ REGISTRY: dict[str, CorpusRecord] = {
         access_status=AccessStatus.REMOTE_STATUS_ONLY,
         source_url="https://ociana.osu.edu/",
         licence="Academic/research",
-        licence_notes="Searchable records with transliteration, translation, commentary, bibliography, provenance, images. Exact public API not confirmed.",
+        licence_notes="Searchable records with transliteration, translation, commentary, bibliography, provenance, images.",
         integration_notes="remote_only — no safe adapter in v0.1.0.",
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "cdli": CorpusRecord(
         corpus_id="cdli",
@@ -127,6 +152,8 @@ REGISTRY: dict[str, CorpusRecord] = {
             "Strict query/id validation, 15s timeout, 5 MiB response cap. "
             "Do not claim full text when API returns metadata only."
         ),
+        last_reviewed="2026-09-21",
+        next_review="2026-12-21",
     ),
     "dppc": CorpusRecord(
         corpus_id="dppc",
@@ -139,6 +166,8 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="Unknown / not published",
         licence_notes="No public API, data, or licence confirmed. Not integrated.",
         integration_notes="deferred — no scraper, no adapter.",
+        last_reviewed="2026-09-21",
+        next_review="2027-03-21",
     ),
     "cip": CorpusRecord(
         corpus_id="cip",
@@ -151,6 +180,8 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence="Unknown / not published",
         licence_notes="No public API, data, or licence confirmed. Not integrated.",
         integration_notes="deferred — no scraper, no adapter.",
+        last_reviewed="2026-09-21",
+        next_review="2027-03-21",
     ),
 }
 
@@ -167,15 +198,39 @@ def get_corpus(corpus_id: str) -> CorpusRecord | None:
 
 def _local_path(corpus_id: str) -> str | None:
     """Return the configured local path for a corpus, or None."""
-    env_map = {
-        "coptic_scriptorium": "COPTSCRIPTORIUM_CORPUS_DIR",
-        "cuc": "CUC_CORPUS_DIR",
-        "tlhdig": "HITTITE_TLHDIG_DIR",
-    }
-    env_var = env_map.get(corpus_id)
-    if env_var:
-        return os.environ.get(env_var)
+    rec = get_corpus(corpus_id)
+    if rec and rec.local_path_env_var:
+        return os.environ.get(rec.local_path_env_var)
     return None
+
+
+def load_sources_manifest() -> list[dict[str, Any]]:
+    """Load the machine-readable sources.json manifest."""
+    if SOURCES_JSON_PATH.exists():
+        return json.loads(SOURCES_JSON_PATH.read_text())
+    return []
+
+
+def get_source_manifest() -> list[dict[str, Any]]:
+    """Return manifest records with live local-path status overlaid."""
+    manifest = load_sources_manifest()
+    results = []
+    for entry in manifest:
+        rec = get_corpus(entry["corpus_id"])
+        merged = dict(entry)
+        if rec:
+            merged["source_type"] = rec.source_type.value
+            merged["access_status"] = rec.access_status.value
+        lp = _local_path(entry["corpus_id"])
+        merged["local_path_configured"] = lp is not None
+        merged["local_path_value"] = lp
+        if lp and os.path.isdir(lp):
+            merged["local_path_exists"] = True
+            merged["access_status"] = AccessStatus.LOCAL_CONFIGURED.value
+        else:
+            merged["local_path_exists"] = False
+        results.append(merged)
+    return results
 
 
 def corpus_status(corpus_id: str) -> dict[str, Any]:
@@ -196,6 +251,10 @@ def corpus_status(corpus_id: str) -> dict[str, Any]:
         "licence": rec.licence,
         "licence_notes": rec.licence_notes,
         "integration_notes": rec.integration_notes,
+        "version_or_commit": rec.version_or_commit,
+        "doi": rec.doi,
+        "last_reviewed": rec.last_reviewed,
+        "next_review": rec.next_review,
     }
 
     # Check local availability

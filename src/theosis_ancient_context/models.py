@@ -37,6 +37,11 @@ class CorpusRecord(BaseModel):
     licence: str
     licence_notes: str = ""
     integration_notes: str = ""
+    local_path_env_var: str | None = None
+    version_or_commit: str | None = None
+    doi: str | None = None
+    last_reviewed: str | None = None
+    next_review: str | None = None
 
 
 class ProvenanceEnvelope(BaseModel):
@@ -55,6 +60,9 @@ class SearchResult(BaseModel):
     status: str
     results: list[dict[str, Any]] = Field(default_factory=list)
     message: str = ""
+    raw_query: str = ""
+    upstream_count: int = 0
+    filtered_count: int = 0
 
 
 class TextResult(BaseModel):

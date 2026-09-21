@@ -1,0 +1,198 @@
+[
+  {
+    "corpus_id": "tla",
+    "name": "Thesaurus Linguae Aegyptiae",
+    "source_url": "https://thesaurus-linguae-aegyptiae.de/",
+    "source_type": "remote_only",
+    "language": [
+      "Egyptian"
+    ],
+    "period": "Old Egyptian \u2013 Coptic (3000 BCE \u2013 1700 CE)",
+    "access_status": "remote_status_only",
+    "licence": "Free for non-commercial research",
+    "licence_notes": "Public research platform; no stable public API contract confirmed. Raw JSON/TEI publication planned.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "remote_only \u2014 no safe adapter in v0.1.0."
+  },
+  {
+    "corpus_id": "coptic_scriptorium",
+    "name": "Coptic SCRIPTORIUM",
+    "source_url": "https://github.com/CopticScriptorium/corpora",
+    "source_type": "local_optional",
+    "language": [
+      "Coptic"
+    ],
+    "period": "2nd \u2013 13th century CE",
+    "access_status": "local_not_configured",
+    "licence": "CC-BY (with explicit exceptions)",
+    "licence_notes": "v6.3.0 release; CoNLL-U/relANNIS/PAULA/TEI formats. Some parts under different licences \u2014 check individual files.",
+    "local_path_env_var": "COPTSCRIPTORIUM_CORPUS_DIR",
+    "version_or_commit": "v6.3.0",
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "local_optional \u2014 requires COPTSCRIPTORIUM_CORPUS_DIR."
+  },
+  {
+    "corpus_id": "hpm_hdivt",
+    "name": "Hittite Ritual Texts (HPM / HDivT)",
+    "source_url": "https://hethport.net/",
+    "source_type": "remote_only",
+    "language": [
+      "Hittite"
+    ],
+    "period": "2nd millennium BCE",
+    "access_status": "remote_status_only",
+    "licence": "Research/academic use",
+    "licence_notes": "HPM is mostly HTML, no REST API. TLHdig XML dataset available separately.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "remote_only \u2014 no safe adapter in v0.1.0."
+  },
+  {
+    "corpus_id": "tlhdig",
+    "name": "Thesaurus Linguarum Hethaeorum digitalis (TLHdig)",
+    "source_url": "https://zenodo.org/records/15459134",
+    "source_type": "local_optional",
+    "language": [
+      "Hittite"
+    ],
+    "period": "2nd millennium BCE",
+    "access_status": "local_not_configured",
+    "licence": "CC-BY 4.0",
+    "licence_notes": "Zenodo DOI: 10.5281/zenodo.15459134. CC-BY 4.0 per Zenodo metadata. HPM site states CC BY-SA \u2014 verify for your use case.",
+    "local_path_env_var": "HITTITE_TLHDIG_DIR",
+    "version_or_commit": "25.1",
+    "doi": "10.5281/zenodo.15459134",
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "local_optional \u2014 requires HITTITE_TLHDIG_DIR pointing to extracted TLHdig XML dataset."
+  },
+  {
+    "corpus_id": "cuc",
+    "name": "Copenhagen Ugaritic Corpus",
+    "source_url": "https://github.com/DT-UCPH/cuc",
+    "source_type": "local_optional",
+    "language": [
+      "Ugaritic"
+    ],
+    "period": "2nd millennium BCE",
+    "access_status": "local_not_configured",
+    "licence": "CC BY-NC 4.0",
+    "licence_notes": "DOI: 10.5281/zenodo.10695308. 278 KTU texts. Text-Fabric format. Do NOT treat ORACC as Ugaritic. Commercial use is prohibited.",
+    "local_path_env_var": "CUC_CORPUS_DIR",
+    "version_or_commit": null,
+    "doi": "10.5281/zenodo.10695308",
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "local_optional \u2014 requires CUC_CORPUS_DIR."
+  },
+  {
+    "corpus_id": "dasi",
+    "name": "Digital Archive for the Study of Pre-Islamic Arabian Inscriptions",
+    "source_url": "https://dasi.cnr.it/",
+    "source_type": "remote_only",
+    "language": [
+      "Arabic",
+      "Epigraphic"
+    ],
+    "period": "1st millennium BCE \u2013 early CE",
+    "access_status": "remote_status_only",
+    "licence": "Academic/research",
+    "licence_notes": "API endpoint mentioned in help page; exact API contract not yet confirmed.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "remote_only \u2014 no safe adapter in v0.1.0."
+  },
+  {
+    "corpus_id": "ociana",
+    "name": "Online Corpus of the Inscriptions of Ancient North Arabia (OCIANA)",
+    "source_url": "https://ociana.osu.edu/",
+    "source_type": "remote_only",
+    "language": [
+      "Ancient North Arabian",
+      "Safaitic",
+      "Dadanitic"
+    ],
+    "period": "1st millennium BCE \u2013 early CE",
+    "access_status": "remote_status_only",
+    "licence": "Academic/research",
+    "licence_notes": "Searchable records with transliteration, translation, commentary, bibliography, provenance, images.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "remote_only \u2014 no safe adapter in v0.1.0."
+  },
+  {
+    "corpus_id": "cdli",
+    "name": "Cuneiform Digital Library Initiative",
+    "source_url": "https://cdli.earth",
+    "source_type": "remote_only",
+    "language": [
+      "Akkadian",
+      "Sumerian",
+      "Elamite"
+    ],
+    "period": "4th millennium \u2013 1st millennium BCE",
+    "access_status": "adapter_ready",
+    "licence": "Open access",
+    "licence_notes": "REST JSON API at https://cdli.earth. Open access \u2014 verify licence for your specific use case.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2026-12-21",
+    "integration_notes": "adapter_ready \u2014 read-only HTTP adapter using stdlib urllib."
+  },
+  {
+    "corpus_id": "dppc",
+    "name": "Dictionnaire de Ph\u00e9nicien et de Punique",
+    "source_url": "http://www.phoinikeia.org/PunicProjectCorpus/",
+    "source_type": "deferred",
+    "language": [
+      "Phoenician",
+      "Punic"
+    ],
+    "period": "1st millennium BCE \u2013 early CE",
+    "access_status": "deferred",
+    "licence": "Unknown / not published",
+    "licence_notes": "No public API, data, or licence confirmed. Not integrated.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2027-03-21",
+    "integration_notes": "deferred \u2014 no scraper, no adapter."
+  },
+  {
+    "corpus_id": "cip",
+    "name": "Corpus Inscriptionum Punicarum",
+    "source_url": "http://www.phoinikeia.org/PunicProjectCorpus/",
+    "source_type": "deferred",
+    "language": [
+      "Punic"
+    ],
+    "period": "1st millennium BCE \u2013 early CE",
+    "access_status": "deferred",
+    "licence": "Unknown / not published",
+    "licence_notes": "No public API, data, or licence confirmed. Not integrated.",
+    "local_path_env_var": null,
+    "version_or_commit": null,
+    "doi": null,
+    "last_reviewed": "2026-09-21",
+    "next_review": "2027-03-21",
+    "integration_notes": "deferred \u2014 no scraper, no adapter."
+  }
+]

@@ -26,13 +26,36 @@ FastMCP stdio service for ancient text corpora. Part of the [Theosis](https://gi
 - **CDLI** has a read-only HTTP adapter targeting the verified [cdli.earth](https://cdli.earth) REST JSON API. Endpoints: `/search/?q=...&format=json`, `/artifacts/<id>.json`, `/inscriptions/<id>.json`. Strict query/id validation, 15s timeout, 5 MiB response cap. Open access — verify licence for your use case. Do not claim full text when the API returns metadata only.
 - **Coptic SCRIPTORIUM** requires a local corpus directory. The adapter supports `meta.json`-backed metadata and bounded text-file search.
 
+## Source-layer routing guidance
+
+When choosing a corpus for research, use the following routing by language/domain:
+
+| Domain / Language | Primary Source | Notes |
+|-------------------|---------------|-------|
+| **Egyptian** (hieroglyphic, hieratic, Demotic) | TLA | Thesaurus Linguae Aegyptiae — remote-only until API contract confirmed |
+| **Coptic** | Coptic SCRIPTORIUM | Local optional — requires `COPTSCRIPTORIUM_CORPUS_DIR` |
+| **Hittite** (ritual texts) | HPM/HDivT | Remote-only; TLHdig XML dataset available separately |
+| **Hittite** (XML editions) | TLHdig | Local optional — requires `HITTITE_TLHDIG_DIR` (Zenodo DOI: 10.5281/zenodo.15459134) |
+| **Ugaritic** | CUC | **CC BY-NC 4.0** — commercial use prohibited. Local optional |
+| **Akkadian / Sumerian / Elamite** (cuneiform) | CDLI | Open access adapter ready — REST JSON API |
+| **Arabic epigraphic** | DASI | Remote-only — no stable API confirmed |
+| **Ancient North Arabian / Safaitic / Dadanitic** | OCIANA | Remote-only — no stable API confirmed |
+| **Phoenician / Punic** | DPPC, CIP | **Deferred** — no public data or API; not integrated |
+
+### Key warnings
+
+- **ORACC is NOT a Ugaritic corpus.** ORACC (Open Richly Annotated Cuneiform Corpus) publishes Sumerian, Akkadian, and other cuneiform texts. It is not a source for Ugaritic primary texts. Use CUC for Ugaritic.
+- **CUC is CC BY-NC.** Commercial use of the Copenhagen Ugaritic Corpus is prohibited. Respect the licence when using KTU text data.
+- **Primary texts vs. translations vs. scholarly synthesis:** This service targets primary-source corpora and their machine-readable editions. Translations, commentaries, and scholarly interpretation may be available through upstream platforms but are not bundled or re-hosted here. Check each source's licence notes for redistribution constraints.
+
 ## Tools
 
 1. `list_corpora` — all registered corpus records with metadata
 2. `get_corpus_status(corpus)` — detailed status, local path, availability
-3. `search_corpus(corpus, query, limit)` — search with explicit status results
-4. `get_text(corpus, reference)` — text retrieval with provenance envelope
-5. `get_text_metadata(corpus, reference)` — metadata retrieval with provenance
+3. `get_source_manifest()` — machine-readable source manifest with version/DOI/review dates
+4. `search_corpus(corpus, query, limit)` — search with explicit status results
+5. `get_text(corpus, reference)` — text retrieval with provenance envelope
+6. `get_text_metadata(corpus, reference)` — metadata retrieval with provenance
 
 ## Setup
 
@@ -45,6 +68,15 @@ uv run pytest -v
 
 # Compile check
 uv run python -m compileall src/theosis_ancient_context -q
+
+# Health check (offline, CI-safe — no network requests)
+uv run python scripts/healthcheck.py
+
+# Health check (live — tests CDLI adapter, bounded read-only HTTP)
+uv run python scripts/healthcheck.py --live
+
+# Health check (text output)
+uv run python scripts/healthcheck.py --text
 
 # Run the server (stdio)
 uv run python -m theosis_ancient_context

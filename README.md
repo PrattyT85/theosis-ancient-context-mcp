@@ -13,7 +13,7 @@ FastMCP stdio service for ancient text corpora. Part of the [Theosis](https://gi
 | **CUC** (Copenhagen Ugaritic Corpus) | Ugaritic | Local optional | CC BY-NC 4.0 |
 | **DASI** | Arabic epigraphic | Remote/status-only | Academic |
 | **OCIANA** | Akkadian/Sumerian | Remote/status-only | Academic |
-| **CDLI** | Akkadian/Sumerian/Elamite | Remote/status-only | Open access |
+| **CDLI** | Akkadian/Sumerian/Elamite | Adapter ready (remote) | Open access |
 | **DPPC** | Phoenician/Punic | Deferred | Not published |
 | **CIP** | Punic | Deferred | Not published |
 
@@ -23,7 +23,7 @@ FastMCP stdio service for ancient text corpora. Part of the [Theosis](https://gi
 - **TLHdig is local optional** — set `HITTITE_TLHDIG_DIR` to the extracted `TLHbasisONLINE25.1_ZENODO` directory from Zenodo record 15459134. The adapter reads bounded XML and labels the dataset/version.
 - **CUC is CC BY-NC and local-only** — commercial use is prohibited. The adapter only works when `CUC_CORPUS_DIR` is configured to point at a local checkout of the corpus.
 - **TLA, HPM, DASI, OCIANA** are remote/status-only until a stable public API contract is verified. They return structured `remote_only` results with provenance envelopes.
-- **CDLI** is status-only until the REST JSON API shape is confirmed from [cdli.earth/docs/api](https://cdli.earth/docs/api).
+- **CDLI** has a read-only HTTP adapter targeting the verified [cdli.earth](https://cdli.earth) REST JSON API. Endpoints: `/search/?q=...&format=json`, `/artifacts/<id>.json`, `/inscriptions/<id>.json`. Strict query/id validation, 15s timeout, 5 MiB response cap. Open access — verify licence for your use case. Do not claim full text when the API returns metadata only.
 - **Coptic SCRIPTORIUM** requires a local corpus directory. The adapter supports `meta.json`-backed metadata and bounded text-file search.
 
 ## Tools
@@ -79,4 +79,4 @@ All results include a provenance envelope with:
 - Bounded search results and text retrieval
 - No persistent cache
 - No secrets required
-- No network requests in v0.1.0 (all adapters are local or status-only)
+- CDLI adapter makes bounded read-only HTTP requests (stdlib urllib, 15s timeout, 5 MiB cap)

@@ -114,11 +114,19 @@ REGISTRY: dict[str, CorpusRecord] = {
         languages=["Akkadian", "Sumerian", "Elamite"],
         period="4th millennium – 1st millennium BCE",
         source_type=SourceType.REMOTE_ONLY,
-        access_status=AccessStatus.REMOTE_STATUS_ONLY,
+        access_status=AccessStatus.ADAPTER_READY,
         source_url="https://cdli.earth",
         licence="Open access",
-        licence_notes="REST JSON API documented at https://cdli.earth/docs/api. Adapter will be added when endpoint shape is confirmed.",
-        integration_notes="remote_only — status-only until API contract verified. Safe adapter planned when docs/endpoint are testable.",
+        licence_notes=(
+            "REST JSON API at https://cdli.earth. Search, artifact metadata, and inscription "
+            "ATF endpoints verified. Open access — verify licence for your specific use case."
+        ),
+        integration_notes=(
+            "adapter_ready — read-only HTTP adapter using stdlib urllib. "
+            "Endpoints: /search/?q=...&format=json, /artifacts/<id>.json, /inscriptions/<id>.json. "
+            "Strict query/id validation, 15s timeout, 5 MiB response cap. "
+            "Do not claim full text when API returns metadata only."
+        ),
     ),
     "dppc": CorpusRecord(
         corpus_id="dppc",

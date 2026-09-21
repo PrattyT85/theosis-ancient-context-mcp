@@ -48,10 +48,11 @@ class TestSearchCorpusTool:
         result = search_corpus("tla", "test")
         assert result["status"] == "remote_only"
 
-    def test_cdli_not_ready(self):
+    def test_cdli_is_live(self):
         result = search_corpus("cdli", "test")
-        assert result["status"] == "not_ready"
-        assert "cdli.earth" in result["message"]
+        # CDLI adapter is now live — may return ok or network_error depending on connectivity
+        assert result["status"] in ("ok", "network_error", "upstream_error")
+        assert "cdli.earth" in result["message"] or "CDLI" in result["message"]
 
     def test_coptic_not_configured(self):
         result = search_corpus("coptic_scriptorium", "test")

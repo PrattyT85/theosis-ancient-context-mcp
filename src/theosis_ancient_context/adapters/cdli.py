@@ -190,7 +190,7 @@ class CDLIAdapter(BaseAdapter):
             provenance=prov,
             status="ok",
             results=results,
-            message=f"Found {len(results)} artifact(s) for query '{q}'. Open access — verify licence for your use.",
+            message=f"CDLI found {len(results)} artifact(s) for query '{q}'. Open access — verify licence for your use.",
         )
 
     # ------------------------------------------------------------------

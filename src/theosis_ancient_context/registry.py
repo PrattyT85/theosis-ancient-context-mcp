@@ -84,18 +84,6 @@ REGISTRY: dict[str, CorpusRecord] = {
         licence_notes="DOI: 10.5281/zenodo.10695308. 278 KTU texts. Text-Fabric format. Do NOT treat ORACC as Ugaritic.",
         integration_notes="local_optional — requires CUC_CORPUS_DIR. Safe lookup only when configured. No dependency on Text-Fabric unless available.",
     ),
-    "tlhdig": CorpusRecord(
-        corpus_id="tlhdig",
-        name="Thesaurus Linguae Hethaeorum digitalis (TLHdig)",
-        languages=["Hittite"],
-        period="2nd millennium BCE",
-        source_type=SourceType.LOCAL_OPTIONAL,
-        access_status=AccessStatus.LOCAL_NOT_CONFIGURED,
-        source_url="https://zenodo.org/records/15459134",
-        licence="CC BY 4.0 (Zenodo dataset; verify source files)",
-        licence_notes="TLHdig 0.2.0-beta; 63.9 MB Zenodo archive. HPM/HDivT-related XML editions; preserve source/version metadata.",
-        integration_notes="local_optional — requires HITTITE_TLHDIG_DIR pointing at the extracted TLHbasisONLINE25.1_ZENODO directory.",
-    ),
     "dasi": CorpusRecord(
         corpus_id="dasi",
         name="Digital Archive for the Study of Pre-Islamic Arabian Inscriptions",
